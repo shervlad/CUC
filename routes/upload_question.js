@@ -8,7 +8,13 @@ mongoose.connect('mongodb://localhost/cuc');
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'Could not connect to DataBase'));
 
-router.post('/', function(req, res, next) {
+
+router.get('/', function(req, res, next) {
+  res.render('upload_question');
+});
+
+
+router.post('/submit', function(req, res, next) {
   var Question = require('../models/question');
   var thisQuestion = new Question(req.body);
   thisQuestion.save(function(err){

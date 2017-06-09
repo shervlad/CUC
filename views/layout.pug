@@ -23,11 +23,11 @@ html
 
       div(class="row")
         div(class="col-lg-12")
-          if success_msg === 'undefined'
+          if typeof(locals.success_msg) != 'object'
             div(class="alert alert-success") #{success_msg}
-          if error_msg === 'undefined'
+          if typeof(locals.error_msg) != 'object'
             div(class="alert alert-danger") #{error_msg}
-          if error === 'undefined'
+          if typeof(locals.error) != 'object'
             div(class="alert alert-danger") #{error}
 
           block content

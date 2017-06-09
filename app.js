@@ -1,4 +1,4 @@
-var express = require('express');
+var express = require( 'express');
 var session = require('express-session');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
@@ -57,9 +57,9 @@ app.use(flash());
 
 // Global Vars
 app.use(function (req, res, next) {
-  res.locals.success_msg = req.flash('success_msg');
-  res.locals.error_msg = req.flash('error_msg');
-  res.locals.error = req.flash('error');
+  res.locals.success_msg = req.flash('success_msg') || null;
+  res.locals.error_msg = req.flash('error_msg') || null;
+  res.locals.error = req.flash('error') || null;
   res.locals.user = req.user || null;
   next();
 });

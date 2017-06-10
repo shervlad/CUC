@@ -2,19 +2,13 @@ var express = require('express');
 var router = express.Router();
 
 
-var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/cuc');
-
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'Could not connect to DataBase'));
-
-
 router.get('/', function(req, res, next) {
-  res.render('upload_question');
+  res.render('upload_question',{});
 });
 
 
 router.post('/submit', function(req, res, next) {
+  console.log('hello')
   var Question = require('../models/question');
   var thisQuestion = new Question(req.body);
   thisQuestion.save(function(err){

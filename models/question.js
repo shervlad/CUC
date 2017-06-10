@@ -8,4 +8,18 @@ var questionSchema = new Schema({
   author : String
 });
 
-module.exports = mongoose.model('Question', questionSchema);
+var Question = module.exports = mongoose.model('Question', questionSchema);
+
+module.exports.getQuestionByAuthor = function(author, callback){
+	var query = {author: author};
+	Question.findOne(query, callback);
+}
+
+module.exports.getAllQuestions = function(callback){
+	Question.find({},function(err,questions){
+    for(var q in questions){
+      console.log(q);
+    }
+    callback(questions);
+  })
+}

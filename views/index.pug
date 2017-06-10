@@ -1,4 +1,27 @@
 extends layout
 
 block content
-  h2 hello
+  h3 Lista de intrebari:
+  -var index=1 
+  each question in questions
+    p
+      b
+        | #{index++}
+      br
+      | #{question.body}
+      br
+      b
+        | RASPUNS:  
+      | #{question.answer} 
+      br
+      if question.comment
+        b
+          | COMENTARIU:   
+        | #{question.comment} 
+        br
+      if question.author
+        b
+          | AUTOR:   
+        | #{question.author}
+      
+      

@@ -1,0 +1,7 @@
+extends layout
+
+block content
+  ul
+    each user in users
+      li
+        a(href='/users/profile/' + user.username) #{user.username}

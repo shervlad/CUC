@@ -8,105 +8,185 @@ var User = require('../models/user');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+    res.send('respond with a resource');
+});
+
+router.get('/list', ensureAuthenticated, function(req, res, next) {
+    User.find({}, function(err, users) {
+        res.render('users', {
+            users: users
+        });
+    });
+});
+
+router.get('/profile/:userName', ensureAuthenticated, function(req, res, next) {
+    console.log(req.params);
+    User.findOne({
+        'username': req.params.userName
+    }, function(err, user) {
+        res.render('profile', {
+            userProfile: user
+        });
+    })
+});
+
+router.get('/profile', ensureAuthenticated, function(req, res, next) {
+    console.log('profile page');
+    User.findOne({
+        'username': req.user.username
+    }, function(err, user) {
+        res.render('profile', {
+            userProfile: user
+        });
+    })
+});
+
+router.post('/profile/addfriend', ensureAuthenticated, function(req, res, next) {
+    User.findOne({
+        'username': req.user.username
+    }, function(err, user1) {
+        if (!err) {
+            User.findOne({
+                '_id': req.body.userID
+            }, function(err, user2) {
+                if (!err) {
+                    if (user1.friends) {
+                        user1.friends += user2._id;
+                    } else {
+                        user1.friends = [user2._id];
+                    }
+                    if (user2.friends) {
+                        user2.friends += user1._id;
+                    } else {
+                        user2.friends = [user1.id];
+                    }
+                    user1.save(function(err) {
+                        if (!err) console.log('added  friend!');
+
+                        user2.save(function(err) {
+                            if (!err) console.log('added  friend!');
+                            res.redirect('back');
+                        })
+                    })
+                }
+            })
+        }
+    })
 });
 
 /* Register Route */
-router.get('/register',function(req,res,next){
-  res.render('register');
-  next();
+router.get('/register', function(req, res, next) {
+    res.render('register');
+    next();
 });
 
 /* Log-In Route */
-router.get('/login',function(req,res,next){
-  res.render('login');
-  next();
+router.get('/login', function(req, res, next) {
+    res.render('login');
+    next();
 });
 
 /* Register Route */
-router.post('/register',function(req,res){
-  var name = req.body.name;
-  var username = req.body.username;
-  var email = req.body.email;
-  var password = req.body.password;
-  var password2 = req.body.password2;
+router.post('/register', function(req, res) {
+    var name = req.body.name;
+    var username = req.body.username;
+    var email = req.body.email;
+    var password = req.body.password;
+    var password2 = req.body.password2;
 
-  // Validation
-	req.checkBody('name', 'Name is required').notEmpty();
-	req.checkBody('email', 'Email is required').notEmpty();
-	req.checkBody('email', 'Email is not valid').isEmail();
-	req.checkBody('username', 'Username is required').notEmpty();
-	req.checkBody('password', 'Password is required').notEmpty();
-	req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
+    // Validation
+    req.checkBody('name', 'Name is required').notEmpty();
+    req.checkBody('email', 'Email is required').notEmpty();
+    req.checkBody('email', 'Email is not valid').isEmail();
+    req.checkBody('username', 'Username is required').notEmpty();
+    req.checkBody('password', 'Password is required').notEmpty();
+    req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
 
-  var errors = req.validationErrors();
+    var errors = req.validationErrors();
 
-	if(errors){
-		res.render('register',{
-			errors:errors
-		});
-	} else {
-      var newUser = new User({
-  			name: name,
-  			email:email,
-  			username: username,
-  			password: password
-  		});
+    if (errors) {
+        res.render('register', {
+            errors: errors
+        });
+    } else {
+        var newUser = new User({
+            name: name,
+            email: email,
+            username: username,
+            password: password
+        });
 
-  		User.createUser(newUser, function(err, user){
-  			if(err) throw err;
-  			console.log(user);
-  		});
+        User.createUser(newUser, function(err, user) {
+            if (err) throw err;
+            console.log(user);
+        });
 
-  		req.flash('success_msg', 'You are registered and can now login');
+        req.flash('success_msg', 'You are registered and can now login');
 
-  		res.redirect('/users/login');
-	}
+        res.redirect('/users/login');
+    }
 
 });
 
 passport.use(new LocalStrategy(
-  function(username, password, done) {
-   User.getUserByUsername(username, function(err, user){
-   	if(err) throw err;
-   	if(!user){
-   		return done(null, false, {message: 'Unknown User'});
-   	}
+    function(username, password, done) {
+        User.getUserByUsername(username, function(err, user) {
+            if (err) throw err;
+            if (!user) {
+                return done(null, false, {
+                    message: 'Unknown User'
+                });
+            }
 
-User.comparePassword(password, user.password, function(err, isMatch){
- 		if(err) throw err;
- 		if(isMatch){
- 			return done(null, user);
- 		} else {
- 			return done(null, false, {message: 'Invalid password'});
- 		}
- 	});
- });
-}));
+            User.comparePassword(password, user.password, function(err, isMatch) {
+                if (err) throw err;
+                if (isMatch) {
+                    return done(null, user);
+                } else {
+                    return done(null, false, {
+                        message: 'Invalid password'
+                    });
+                }
+            });
+        });
+    }));
 
 passport.serializeUser(function(user, done) {
-  done(null, user.id);
+    done(null, user.id);
 });
 
 passport.deserializeUser(function(id, done) {
-  User.getUserById(id, function(err, user) {
-    done(err, user);
-  });
+    User.getUserById(id, function(err, user) {
+        done(err, user);
+    });
 });
 
 router.post('/login',
-  passport.authenticate('local', {successRedirect:'/', failureRedirect:'/users/login',failureFlash: true}),
-  function(req, res) {
-    res.redirect('/');
-  });
+    passport.authenticate('local', {
+        successRedirect: '/',
+        failureRedirect: '/users/login',
+        failureFlash: true
+    }),
+    function(req, res) {
+        res.redirect('/');
+    });
 
-router.get('/logout', function(req, res){
-	req.logout();
+router.get('/logout', ensureAuthenticated, function(req, res) {
+    req.logout();
 
-	req.flash('success_msg', 'You are logged out');
+    req.flash('success_msg', 'You are logged out');
 
-	res.redirect('/users/login');
+    res.redirect('/users/login');
 });
 
+
+function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    } else {
+        //req.flash('error_msg','You are not logged in');
+        res.redirect('/users/login');
+    }
+}
 
 module.exports = router;

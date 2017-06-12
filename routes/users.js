@@ -2,15 +2,11 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-
+var mongoose = require('mongoose');
 var User = require('../models/user');
 
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-    res.send('respond with a resource');
-});
-
 router.get('/list', ensureAuthenticated, function(req, res, next) {
     User.find({}, function(err, users) {
         res.render('users', {
@@ -42,36 +38,34 @@ router.get('/profile', ensureAuthenticated, function(req, res, next) {
 });
 
 router.post('/profile/addfriend', ensureAuthenticated, function(req, res, next) {
+    console.log('befriending users: ',req.user.username,' and ',req.body.username);
     User.findOne({
         'username': req.user.username
     }, function(err, user1) {
-        if (!err) {
-            User.findOne({
-                '_id': req.body.userID
-            }, function(err, user2) {
-                if (!err) {
-                    if (user1.friends) {
-                        user1.friends += user2._id;
-                    } else {
-                        user1.friends = [user2._id];
-                    }
-                    if (user2.friends) {
-                        user2.friends += user1._id;
-                    } else {
-                        user2.friends = [user1.id];
-                    }
-                    user1.save(function(err) {
-                        if (!err) console.log('added  friend!');
+        User.findOne({
+            'username': req.body.username
+        }, function(err, user2) {
+            if (user1.friends) {
+                user1.friends.push(user2._id);
+            } else {
+                user1.friends = [user12._id];
+            }
+            if (user2.friends) {
+                user2.friends.push(user1._id);
+            } else {
+                user2.friends = [user1._id];
+            }
+            user1.save(function(err) {
+                if (!err) console.log('added  friend!');
 
-                        user2.save(function(err) {
-                            if (!err) console.log('added  friend!');
-                            res.redirect('back');
-                        })
-                    })
-                }
             })
-        }
+            user2.save(function(err) {
+                if (!err) console.log('added  friend!');
+            })
+        })
+
     })
+    res.redirect('back');
 });
 
 /* Register Route */
@@ -113,7 +107,8 @@ router.post('/register', function(req, res) {
             name: name,
             email: email,
             username: username,
-            password: password
+            password: password,
+            friends: []
         });
 
         User.createUser(newUser, function(err, user) {

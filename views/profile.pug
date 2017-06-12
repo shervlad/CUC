@@ -3,6 +3,7 @@ extends layout
 block content
     p
     | username : #{userProfile.username}
+    br
     if userProfile.friends.length > 0
         b="friends:"
         ul
@@ -10,5 +11,5 @@ block content
                 li
                     #{friend}   
     form(method="post" action="/users/profile/addfriend")
-        input(type="hidden" name="userID" value="#{userProfile._id}")
+        input(type="hidden" name="username" value=""+userProfile.username)
         input(type="submit" value="Add Friend")

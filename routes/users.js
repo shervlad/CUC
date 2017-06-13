@@ -16,7 +16,6 @@ router.get('/list', ensureAuthenticated, function(req, res, next) {
 });
 
 router.get('/profile/:userName', ensureAuthenticated, function(req, res, next) {
-    console.log(req.params);
     User.findOne({
         'username': req.params.userName
     }, function(err, user) {
@@ -27,7 +26,6 @@ router.get('/profile/:userName', ensureAuthenticated, function(req, res, next) {
 });
 
 router.get('/profile', ensureAuthenticated, function(req, res, next) {
-    console.log('profile page');
     User.findOne({
         'username': req.user.username
     }, function(err, user) {
@@ -38,32 +36,19 @@ router.get('/profile', ensureAuthenticated, function(req, res, next) {
 });
 
 router.post('/profile/addfriend', ensureAuthenticated, function(req, res, next) {
-    console.log('befriending users: ',req.user.username,' and ',req.body.username);
+    console.log('befriending users: ', req.user.username, ' and ', req.body.username);
     User.findOne({
         'username': req.user.username
     }, function(err, user1) {
-        User.findOne({
-            'username': req.body.username
-        }, function(err, user2) {
-            if (user1.friends) {
-                user1.friends.push(user2._id);
-            } else {
-                user1.friends = [user12._id];
-            }
-            if (user2.friends) {
-                user2.friends.push(user1._id);
-            } else {
-                user2.friends = [user1._id];
-            }
-            user1.save(function(err) {
-                if (!err) console.log('added  friend!');
+        user1['friends'].push(req.body.username);
+        user1.save();
+    })
 
-            })
-            user2.save(function(err) {
-                if (!err) console.log('added  friend!');
-            })
-        })
-
+    User.findOne({
+        'username': req.body.username
+    }, function(err, user2) {
+        user2['friends'].push(req.user.username);
+        user2.save();
     })
     res.redirect('back');
 });

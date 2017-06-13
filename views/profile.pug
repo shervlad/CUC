@@ -8,8 +8,8 @@ block content
         b="friends:"
         ul
             each friend in userProfile.friends
-                li
-                    #{friend}   
-    form(method="post" action="/users/profile/addfriend")
-        input(type="hidden" name="username" value=""+userProfile.username)
-        input(type="submit" value="Add Friend")
+                li=friend
+    if userProfile.username != user.username && !(userProfile.friends.indexOf(user.username) > -1)
+        form(method="post" action="/users/profile/addfriend")
+            input(type="hidden" name="username" value=""+userProfile.username)
+            input(type="submit" value="Add Friend")
